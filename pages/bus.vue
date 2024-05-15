@@ -33,11 +33,13 @@
       </VCol>
 
       <VCol cols="12">
-        <VSheet rounded="lg">
+        <VSheet rounded="lg" class="overflow-hidden" >
+          <VProgressLinear color="primary" v-if="loading" indeterminate class="custom-progress-bar" />
+          <div color="primary" v-else class="loading-placeholder" ></div>
           <VTabs id="busPage-fetchResult-tabs" align-tabs="center" v-model="fetchResultTabs.selected">
             <VTab>到着予定時刻順</VTab>
             <VTab>時刻表順</VTab>
-            <VBtn variant="text" icon="mdi-reload" />
+            <VBtn variant="text" icon="mdi-reload" @click="fetchServices(intervalSelector.selected)"/>
           </VTabs>
 
           <VWindow id="busPage-fetchResult-panels" v-model="fetchResultTabs.selected">
@@ -66,6 +68,14 @@
 <style lang="scss" scoped>
   #busPage {
     padding: 0;
+  }
+  .loading-placeholder {
+    height: 4px;
+  }
+</style>
+<style>
+  .custom-progress-bar .v-progress-linear__background {
+    background-color: rgba(0, 0, 0, 0) !important;
   }
 </style>
 
@@ -131,6 +141,7 @@
   });
 
   const services = ref<Bus.Service[]>([]);
+  const loading = ref<boolean>(false);
 
   /*services.value = [
     {
@@ -176,7 +187,9 @@
   // ########## Methods ##########
   async function fetchServices (interval: string) {
     const [ start, goal ] = interval.split("-");
+    loading.value = true;
     services.value = await fetch(`/api/v1/bus/services?start=${start}&goal=${goal}`).then(res => res.json());
+    loading.value = false;
   }
 
   function loadInterval () {
